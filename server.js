@@ -2,7 +2,8 @@
 var connect = require('connect')
     , express = require('express')
     , io = require('socket.io')
-    , port = (process.env.PORT || 8081);
+    , port = (process.env.PORT || 8081)
+    , Crawler = require("crawler").Crawler;
 
 //Setup Express
 var server = express.createServer();
@@ -19,19 +20,19 @@ server.configure(function(){
 //setup the errors
 server.error(function(err, req, res, next){
     if (err instanceof NotFound) {
-        res.render('404.jade', { locals: { 
+        res.render('404.jade', { locals: {
                   title : '404 - Not Found'
                  ,description: ''
                  ,author: ''
-                 ,analyticssiteid: 'XXXXXXX' 
+                 ,analyticssiteid: 'XXXXXXX'
                 },status: 404 });
     } else {
-        res.render('500.jade', { locals: { 
+        res.render('500.jade', { locals: {
                   title : 'The Server Encountered an Error'
                  ,description: ''
                  ,author: ''
                  ,analyticssiteid: 'XXXXXXX'
-                 ,error: err 
+                 ,error: err
                 },status: 500 });
     }
 });
@@ -41,10 +42,37 @@ server.listen( port);
 var io = io.listen(server);
 io.sockets.on('connection', function(socket){
   console.log('Client Connected');
+  /*
+  socket.on('setPseudo', function(data) {
+    socket.set('pseudo', data);
+  }); */
+  /*
   socket.on('message', function(data){
-    socket.broadcast.emit('server_message',data);
-    socket.emit('server_message',data);
+    socket.get('psuedo', function(error, name) {
+      var data = { 'message': message, psuedo : name };
+      socket.broadcast.emit('message',data);
+      console.log("message: " + message);
+    });
   });
+  */
+  socket.on('setHost', function(data) {
+	 socket.set('host', data); 
+	 console.log("Host set to: " + data);
+  });
+  socket.on('startSpider', function(host) {
+    console.log('Client request to spider host: ' + host);
+	 var c = new Crawler({
+		"maxConnections": 10,
+		"callback": function(error, result, $) {
+			console.log(JSON.stringify(result));
+			console.log(JSON.stringify($));
+			socket.emit('route', {"url": result});
+		}
+	 });
+	 c.queue(host);
+  });
+
+
   socket.on('disconnect', function(){
     console.log('Client Disconnected.');
   });
@@ -59,13 +87,18 @@ io.sockets.on('connection', function(socket){
 
 server.get('/', function(req,res){
   res.render('index.jade', {
-    locals : { 
+    locals : {
               title : 'Your Page Title'
              ,description: 'Your Page Description'
              ,author: 'Your Name'
-             ,analyticssiteid: 'XXXXXXX' 
+             ,analyticssiteid: 'XXXXXXX'
             }
   });
+});
+server.post('/', function(req,res){
+  var q = req.body.domain;
+  console.log("Request:");
+  console.log(req.body);
 });
 
 
