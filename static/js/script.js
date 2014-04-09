@@ -15,27 +15,24 @@ $(document).ready(function() {
 
   var socket = io.connect();
 
-  $('#setHost').click(function() {
-	setHost();
-  });
   $('#spiderHost').click(function() {
-	startSpider();
+	  startSpider();
   });
 
   socket.on('route', function(data) {
-	console.log(data);
-    addRoute(data['url']);
+	  console.log(data);
+    addRoute(data['type'], data['url']);
   });
   socket.on('server_message', function(data){
-   $('#receiver').append('<li>' + data + '</li>');
+    $('#receiver').append('<li>' + data + '</li>');
   });
 
 
 	function setHost() {
 	  if($('#host').val() != "")
 	  {
-		socket.emit('setHost', $('#host').val());
-		console.log('Host set to: ' +  $('#host').val());
+		  socket.emit('setHost', $('#host').val());
+		  console.log('Host set to: ' +  $('#host').val());
 	  }
 	}
 	
@@ -44,8 +41,8 @@ $(document).ready(function() {
 		console.log('Start spidering host');
 	}
 
-	function addRoute(url) {
+	function addRoute(type, url) {
 	  console.log(url);
-	  $('#receiver').append('<li>' + url + '</li>');
+	  $('#results-table').append('<tr><td>' + type + '</td><td>' + url + '</td></tr>');
 	}
 });

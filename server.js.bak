@@ -43,25 +43,56 @@ var io = io.listen(server);
 io.sockets.on('connection', function(socket) {
   console.log('Client Connected');
   socket.on('startSpider', function(host) {
-    console.log('Client request to spider host: ' + host);
-    var resultSet = [];
-    Crawler.crawl(host)
-       .on("fetchcomplete", function (queueItem, responseBuffer, response) {
-         var data = {};
-         data.url = queueItem.url;
-         data.type = response.headers['content-type'];
-         console.log(data.url);
-         socket.emit('route', data);
-         resultSet.push(data);
-       })
-       .on("discoverycomplete", function(queueItem, resources) {
-         resources.forEach(function(url) {
-           console.log("Adding " + url + " to next queue");
-         });
-       });
+
+    var crawler = new Crawler(host);
+
+    // Crawler Configuration
+    //crawler.initialPath = host;
+    // crawler.interval = 1000;
+
+    crawler.on("crawlstart", function(){
+      console.log("\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+      console.log("+\n+  Started Spidering " + host);
+      console.log("+\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+    });
+
+    // Crawler Events
+    crawler.on("fetchcomplete", function (queueItem, responseBuffer, response) {
+      var data = {};
+      data.url = queueItem.url;
+      data.type = response.headers['content-type'];
+      console.log(data.url);
+      socket.emit('route', data);
+    });
+
+
+
+    crawler.on("discoverycomplete", function(queueItem, resources) {
+      resources.forEach(function(url) {
+        var data = {};
+
+        data.url = queueItem.url;
+        data.type = "";
+
+        socket.emit('route', data);
+        console.log("Adding " + url + " to queue");
+        crawler.queueURL(url);
+      });
+    });
+
+    crawler.on("queueerror", function(errorData, URLData) {
+      console.log("[ERROR] Error adding " + URLData + " to the queue.");
+      console.log("[ERROR] " + errorData);
+    });
+
+    crawler.on("complete", function() {
+      console.log("\n+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n+");
+      console.log("+  Finished");
+      console.log("+\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+    });
+    crawler.start();
+
   });
-
-
   socket.on('disconnect', function(){
     console.log('Client Disconnected.');
   });

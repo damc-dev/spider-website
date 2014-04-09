@@ -9,7 +9,8 @@
     "jade": "0.20.0",
     "mongoose": "2.4.8",
     "socket.io": "0.8.7",
-    "crawler": "~0.2.5"
+    "crawler": "~0.2.5",
+    "simplecrawler": "~0.3.6"
   },
   "devDependencies": {
     "vows": "0.5.x",

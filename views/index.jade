@@ -3,6 +3,14 @@ extends layout
 block content
   div
     label Domain:
-      input(type="text", name="host", id="host", value="http://dmcelligott.com/")
-      button#setHost Set Host
+      input(type="text", name="host", id="host", value="http://dmcelligott.com")
       button#spiderHost Spider Host
+
+
+    table#results-table
+      thead
+        tr
+          th type
+          th url
+      tbody
+     
