@@ -15,3 +15,5 @@ A simple spider application that crawls a submitted website and updates results 
 - [ ] Feature: Image and file previews (or thumbnails)
 - [ ] Feature: Store requested files in Mongo DB (instead of log)
     - [ ] Feature: Serve files from database
+
+
